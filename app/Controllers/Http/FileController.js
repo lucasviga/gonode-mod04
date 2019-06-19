@@ -14,8 +14,28 @@ class FileController {
 
       const fileName = `${Date.now()}.${upload.subtype}`
 
-      await upload.move(Helpers.tmPath('uploads'))
-    } catch (err) {}
+      await upload.move(Helpers.tmPath('uploads'), {
+        name: fileName
+      })
+
+      // se nao aconteceu move
+      if (!upload.moved()) {
+        throw upload.error()
+      }
+
+      const file = await File.create({
+        file: fileName,
+        name: upload.clientName,
+        type: upload.type,
+        subtype: upload.type
+      })
+
+      return file
+    } catch (err) {
+      return response
+        .status(err.status)
+        .send({ error: { message: 'Erro no upload de arquivo' } })
+    }
   }
 }
 
